@@ -301,3 +301,8 @@ ParDo.of(new DoFn<input, output>() {
 - **`MapElements`**: Converts the resulting `PCollection<String>` to print each result.
 
 - **`pipeline.run().waitUntilFinish()`**: Executes the pipeline and waits for it to complete.
+
+
+NOTE:
+
+- To run the java file from Maven -   mvn exec:java -D"exec.mainClass"="com.complexExamples.code_03_BeamPipeline"
