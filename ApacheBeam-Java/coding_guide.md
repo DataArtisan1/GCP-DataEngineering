@@ -74,6 +74,7 @@
 
 
 - **via()**
+   - via() defines the process (input transformation).
    - **Concept**: `via()` defines the transformation logic for how elements in the `PCollection` are processed.
    - **Usage**: In the snippet `.via((String word) -> word.toUpperCase())`, the `via()` method is used to specify the transformation logic, in this case converting each string to uppercase.
 
@@ -84,6 +85,7 @@
 
 
 - **into()**
+   - into() defines the output type (result structure).
    - **Concept**: `into()` is a method used to specify the target type of the transformation’s output.
    - **Usage**: In the snippet `MapElements.into(TypeDescriptor.of(String.class))`, `into()` specifies that the transformation will output a `PCollection` of strings.
 
@@ -96,3 +98,62 @@
 - **waitUntilFinish()**
    - **Concept**: `waitUntilFinish()` waits for the pipeline to finish executing before proceeding further.
    - **Usage**: In the snippet `p.run().waitUntilFinish()`, it ensures the pipeline completes its execution before the program continues.
+
+
+# Type Descriptors
+
+- **`TypeDescriptors.strings()`**: For `String` type.
+- **`TypeDescriptors.integers()`**: For `Integer` type.
+- **`TypeDescriptors.longs()`**: For `Long` type.
+- **`TypeDescriptors.doubles()`**: For `Double` type.
+- **`TypeDescriptors.floats()`**: For `Float` type.
+- **`TypeDescriptors.booleans()`**: For `Boolean` type.
+- **`TypeDescriptors.bytes()`**: For `Byte` type.
+- **`TypeDescriptors.kvs(TypeDescriptor<K>, TypeDescriptor<V>)`**: For `KV<K, V>` type.
+- **`TypeDescriptors.iterables(TypeDescriptor<T>)`**: For `Iterable<T>` type.
+- **`TypeDescriptors.maps(TypeDescriptor<K>, TypeDescriptor<V>)`**: For `Map<K, V>` type.
+- **`TypeDescriptors.pcollections(TypeDescriptor<T>)`**: For `PCollection<T>` type.
+- **`TypeDescriptors.list(TypeDescriptor<T>)`**: For `List<T>` type.
+- **`TypeDescriptors.sets(TypeDescriptor<T>)`**: For `Set<T>` type.
+- **`TypeDescriptor.of(Class<T>)`**: For any custom or complex type.
+- **`TypeDescriptor.of(ParameterizedType)`**: For parameterized types like `List<String>` or `Map<String, Integer>`.
+
+
+## Type descriptors with their class notations
+
+- **`TypeDescriptors.strings()`**: For `String` type.  
+  Equivalent to `TypeDescriptor.of(String.class)`.
+
+- **`TypeDescriptors.integers()`**: For `Integer` type.  
+  Equivalent to `TypeDescriptor.of(Integer.class)`.
+
+- **`TypeDescriptors.longs()`**: For `Long` type.  
+  Equivalent to `TypeDescriptor.of(Long.class)`.
+
+- **`TypeDescriptors.doubles()`**: For `Double` type.  
+  Equivalent to `TypeDescriptor.of(Double.class)`.
+
+- **`TypeDescriptors.floats()`**: For `Float` type.  
+  Equivalent to `TypeDescriptor.of(Float.class)`.
+
+- **`TypeDescriptors.booleans()`**: For `Boolean` type.  
+  Equivalent to `TypeDescriptor.of(Boolean.class)`.
+
+- **`TypeDescriptors.bytes()`**: For `Byte` type.  
+  Equivalent to `TypeDescriptor.of(Byte.class)`.
+
+- **`TypeDescriptors.kvs(TypeDescriptor<K>, TypeDescriptor<V>)`**: For `KV<K, V>` type.
+
+- **`TypeDescriptors.iterables(TypeDescriptor<T>)`**: For `Iterable<T>` type.
+
+- **`TypeDescriptors.maps(TypeDescriptor<K>, TypeDescriptor<V>)`**: For `Map<K, V>` type.
+
+- **`TypeDescriptors.pcollections(TypeDescriptor<T>)`**: For `PCollection<T>` type.
+
+- **`TypeDescriptors.list(TypeDescriptor<T>)`**: For `List<T>` type.
+
+- **`TypeDescriptors.sets(TypeDescriptor<T>)`**: For `Set<T>` type.
+
+- **`TypeDescriptor.of(Class<T>)`**: For any custom or complex type.
+
+- **`TypeDescriptor.of(ParameterizedType)`**: For parameterized types like `List<String>` or `Map<String, Integer>`.
