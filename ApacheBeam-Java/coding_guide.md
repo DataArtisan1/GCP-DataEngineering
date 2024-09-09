@@ -157,3 +157,147 @@
 - **`TypeDescriptor.of(Class<T>)`**: For any custom or complex type.
 
 - **`TypeDescriptor.of(ParameterizedType)`**: For parameterized types like `List<String>` or `Map<String, Integer>`.
+
+
+### PCollectionView and View.asSingleton()
+
+#### **PCollectionView**
+
+- **What It Is:**
+    - A `PCollectionView` is a special type of `PCollection` used to share static data across multiple elements in a `PCollection`.
+    - Think of it as a way to pass small, read-only data to your processing steps. It’s like having a shared reference that multiple parts of your pipeline can access.
+
+- **Usage:**
+    - It’s typically used when you want to use a small amount of data (like configuration values or constants) in your transformations.
+
+#### **View.asSingleton()**
+
+- **What It Is:**
+    - `View.asSingleton()` is a method that converts a `PCollection` into a `PCollectionView` that contains exactly one element.
+    - This is useful when you know your `PCollection` will have only one element, and you need to use that single value across your entire pipeline.
+
+
+### **User Defined Functions**
+
+#### **DoFn**
+
+- **What It Is:**
+    - `DoFn` stands for "Do Function." It is a base class in Apache Beam used to define custom transformations applied to elements of a `PCollection`.
+    - You subclass `DoFn` and override its `processElement` method to specify how each element should be transformed.
+
+- **Usage:**
+    - Use `DoFn` when you need custom logic for processing each element in a `PCollection`.
+
+#### **@ProcessElement**
+
+- **What It Is:**
+    - `@ProcessElement` is an annotation that marks a method in a `DoFn` subclass as the method that processes individual elements of the `PCollection`.
+
+- **Usage:**
+    - This method contains the logic for processing each element and is called once for each element in the `PCollection`.
+
+#### **ProcessContext**
+
+- **What It Is:**
+    - `ProcessContext` is an object provided to the `@ProcessElement` method. It gives access to the current element being processed and provides methods to output results.
+
+- **Key Methods:**
+    - `c.element()`: Retrieves the current element from the input `PCollection`.
+    - `c.output(...)`: Outputs one or more results from the `@ProcessElement` method.
+
+#### **ParDo**
+
+- **What It Is:**
+    - `ParDo` is a transform that applies a `DoFn` to each element of a `PCollection`. It is used for parallel processing of elements.
+
+- **Usage:**
+    - Use `ParDo` when you want to apply custom processing logic to each element in a `PCollection`. It can output zero or more results for each input element.
+
+### **c.output()**
+
+- **What It Is:**
+
+  - `c.output()` is a method provided by the `ProcessContext` object inside the `@ProcessElement` method of a `DoFn`.
+  - It allows you to emit results from the `DoFn` for each element processed.
+
+- **Usage:**
+
+  - **Emitting Results**: Use `c.output()` to send processed data to the next stage in the pipeline.
+  - **Multiple Outputs**: You can call `c.output()` multiple times to emit multiple results for a single input element.
+
+- **Parameters:**
+
+  - **Single Element**: Pass a single element to `c.output()` to emit it as part of the `PCollection` being processed.
+  - **Iterable**: You can also pass an `Iterable` to `c.output()` if you need to emit multiple elements at once.
+
+
+### **Example Code**
+
+```java
+package com.example;
+
+import org.apache.beam.sdk.Pipeline;
+import org.apache.beam.sdk.transforms.DoFn;
+import org.apache.beam.sdk.transforms.ParDo;
+import org.apache.beam.sdk.transforms.MapElements;
+import org.apache.beam.sdk.values.PCollection;
+import org.apache.beam.sdk.values.TypeDescriptor;
+import org.apache.beam.sdk.transforms.Create;
+
+public class code_06_BeamParDo {
+    public static void main(String[] args) {
+
+        // Create a pipeline
+        Pipeline pipeline = Pipeline.create();
+
+        // Create a PCollection of integers
+        PCollection<Integer> numbers = pipeline.apply(Create.of(1, 2, 3, 4, 5));
+
+        // Apply ParDo to process each element
+        PCollection<String> results = numbers.apply(ParDo.of(new DoFn<Integer, String>() {
+            @ProcessElement
+            public void processElement(ProcessContext c) {
+                Integer number = c.element();  // Get the current element (integer)
+                String result = "Number: " + number;  // Create a string representation
+                c.output(result);  // Output the result
+            }
+        }));
+
+        // Print the results
+        results.apply(MapElements.into(TypeDescriptor.of(Void.class))
+                .via((String result) -> {
+                    System.out.println(result);  // Print each result
+                    return null;
+                }));
+
+        // Run the pipeline
+        pipeline.run().waitUntilFinish();
+    }
+}
+```
+
+```java
+ParDo.of(new DoFn<input, output>() {
+    @ProcessElement
+    public void processElement(ProcessContext c) {
+        // c.element() returns an element of type input
+        // c.output(outputElement) emits an element of type output
+    }
+});
+
+```
+
+### **Code Explanation**
+
+- **`DoFn<Integer, String>`**: Defines a custom transformation where each `Integer` input element is transformed into a `String`.
+
+- **`@ProcessElement` Method**:
+    - **`processElement(ProcessContext c)`**:
+        - **`c.element()`**: Retrieves the current integer.
+        - **`c.output(result)`**: Outputs the transformed string.
+
+- **`ParDo.of(...)`**: Applies the custom `DoFn` to each element of the `PCollection`.
+
+- **`MapElements`**: Converts the resulting `PCollection<String>` to print each result.
+
+- **`pipeline.run().waitUntilFinish()`**: Executes the pipeline and waits for it to complete.

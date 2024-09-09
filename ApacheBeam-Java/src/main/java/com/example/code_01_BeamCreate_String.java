@@ -3,11 +3,10 @@ package com.example;
 import org.apache.beam.sdk.Pipeline;
 import org.apache.beam.sdk.transforms.Create;
 import org.apache.beam.sdk.transforms.MapElements;
-import org.apache.beam.sdk.transforms.SimpleFunction;
 import org.apache.beam.sdk.values.PCollection;
 import org.apache.beam.sdk.values.TypeDescriptor;
 
-public class code_01_BeamCreate {
+public class code_01_BeamCreate_String {
     public static void main(String[] args) {
         // Create a pipeline
         Pipeline p = Pipeline.create();
