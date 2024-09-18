@@ -99,6 +99,36 @@
    - **Concept**: `waitUntilFinish()` waits for the pipeline to finish executing before proceeding further.
    - **Usage**: In the snippet `p.run().waitUntilFinish()`, it ensures the pipeline completes its execution before the program continues.
 
+## Difference Between `TypeDescriptor` and `TypeDescriptors`
+
+### `TypeDescriptor`
+
+- **Purpose**: Represents a specific type of data.
+- **Usage**: Used to define the type of elements in a `PCollection` or the output from a transformation.
+- **Example**: When you need to specify a specific class type, such as `String` or `Integer`.
+
+### `TypeDescriptors`
+
+- **Purpose**: A utility class that provides common `TypeDescriptor` instances for convenience.
+- **Usage**: Provides predefined `TypeDescriptor` instances for common types like `String`, `Integer`, etc.
+- **Example**: When you want a shorthand way to specify common types, like `String`.
+
+### Key Differences
+
+- **`TypeDescriptor`**: Allows you to create a new type descriptor for any class you specify.
+- **`TypeDescriptors`**: Offers predefined instances of `TypeDescriptor` for commonly used types, making it easier and quicker to use.
+
+### When to Use Each
+
+- **Use `TypeDescriptor`**: When you need to specify a custom or less common type that is not provided by `TypeDescriptors`.
+- **Use `TypeDescriptors`**: For convenience with common types, where predefined instances are readily available.
+
+### Summary
+
+- **`TypeDescriptor`**: Provides a method to create a new type descriptor for any class.
+- **`TypeDescriptors`**: Provides a set of predefined type descriptors for frequently used types, offering a convenient shorthand.
+
+
 
 # Type Descriptors
 
@@ -302,7 +332,154 @@ ParDo.of(new DoFn<input, output>() {
 
 - **`pipeline.run().waitUntilFinish()`**: Executes the pipeline and waits for it to complete.
 
+### Using `{}` and Not Using `{}` in `.via()` in Apache Beam Java
+
+- **Without `{}`:**
+    - Use for single-line expressions.
+    - No need for `return` keyword.
+
+  ```java
+  .via((String word) -> word.toUpperCase());
+    ```
+
+- **With `{}`:**
+    - Use for multiple statements or complex logic.
+    - Explicit `return` keyword.
+
+  ```java
+    .via((String word) -> {
+    String upperCaseWord = word.toUpperCase();
+    System.out.println(upperCaseWord);
+    return upperCaseWord;
+    });
+    ```
+
+# Apache Beam Methods and Their Usage
+
+## Method Summary
+
+| **Transform**          | **Method**          | **Purpose**                                                                 | **Sample Syntax**                                                                                                            |
+|------------------------|----------------------|-----------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| **`MapElements`**      | `via`                | Applies a function to each element and transforms it.                      | ```java pipeline.apply(MapElements.into(TypeDescriptor.<br/>of(OutputType.class))<br/>.via((InputType element) -> transformedElement))``` |
+| **`FlatMapElements`**  | `via`                | Applies a function that produces zero or more output elements for each input element. | ```java pipeline.apply(FlatMapElements.into(TypeDescriptor.of(OutputType.class)).via((InputType element) -> Arrays.asList(outputElements)))``` |
+| **`ParDo`**            | `withOutputType`     | Specifies the type of output elements.                                      | ```java pipeline.apply(ParDo.of(new DoFn<InputType, OutputType>() { ... }).withOutputType(TypeDescriptor.of(OutputType.class)))``` |
+| **`GroupByKey`**       | `by`                 | Extracts the key from `KV` elements for grouping.                           | ```java pipeline.apply(GroupByKey.create())``` |
+| **`Count.perElement`** | `by`                 | Counts occurrences of each distinct element.                               | ```java pipeline.apply(Count.perElement())``` |
+| **`Combine`**          | `withInputType`      | Specifies the type of input elements for combining.                        | ```java pipeline.apply(Combine.globally(new YourCombineFn()).withInputType(TypeDescriptor.of(InputType.class)))``` |
+| **`TextIO.read`**      | `from`               | Specifies the file path or pattern for reading input data.                  | ```java pipeline.apply(TextIO.read().from("path/to/input/file"))``` |
+| **`TextIO.write`**     | `to`                 | Specifies the file path or pattern for writing output data.                 | ```java pipeline.apply(TextIO.write().to("path/to/output/file"))``` |
+| **`Create`**           | `withCoder`          | Specifies the coder for the created `PCollection`.                          | ```java pipeline.apply(Create.of(elements).withCoder(Coder.of(ElementType.class)))``` |
+
+## Method Details with Templates
+
+- **`via`**:
+    - **Purpose**: Transform each element.
+    - **Template**:
+      ```java
+      pipeline.apply(MapElements
+          .into(TypeDescriptor.of(OutputType.class))
+          .via((InputType element) -> transformedElement));
+      ```
+    - **Example**: Convert strings to uppercase:
+      ```java
+      PCollection<String> uppercased = lines.apply(MapElements
+          .into(TypeDescriptor.of(String.class))
+          .via((String line) -> line.toUpperCase()));
+      ```
+
+- **`FlatMapElements`**:
+    - **Purpose**: Produce zero or more elements per input element.
+    - **Template**:
+      ```java
+      pipeline.apply(FlatMapElements
+          .into(TypeDescriptor.of(OutputType.class))
+          .via((InputType element) -> Arrays.asList(outputElements)));
+      ```
+    - **Example**: Split lines into words:
+      ```java
+      PCollection<String> words = lines.apply(FlatMapElements
+          .into(TypeDescriptor.of(String.class))
+          .via((String line) -> Arrays.asList(line.split("\\W+"))));
+      ```
+
+- **`withOutputType`**:
+    - **Purpose**: Define the type of output elements.
+    - **Template**:
+      ```java
+      pipeline.apply(ParDo.of(new DoFn<InputType, OutputType>() { ... })
+          .withOutputType(TypeDescriptor.of(OutputType.class)));
+      ```
+    - **Example**: Specify output type in `ParDo`:
+      ```java
+      PCollection<String> processed = lines.apply(ParDo.of(new DoFn<String, String>() {
+          @ProcessElement
+          public void processElement(ProcessContext c) {
+              c.output(c.element().toUpperCase());
+          }
+      }).withOutputType(TypeDescriptor.of(String.class)));
+      ```
+
+- **`by`**:
+    - **Purpose**: Key extraction for grouping or counting.
+    - **Template**:
+      ```java
+      pipeline.apply(GroupByKey.create());
+      ```
+    - **Example**: Count elements per key:
+      ```java
+      PCollection<KV<String, Long>> wordCounts = words.apply(Count.perElement());
+      ```
+
+- **`withInputType`**:
+    - **Purpose**: Define input type for combining.
+    - **Template**:
+      ```java
+      pipeline.apply(Combine.globally(new YourCombineFn())
+          .withInputType(TypeDescriptor.of(InputType.class)));
+      ```
+    - **Example**: Combine elements globally:
+      ```java
+      PCollection<Integer> sum = numbers.apply(Combine.globally(new SumFn())
+          .withInputType(TypeDescriptor.of(Integer.class)));
+      ```
+
+- **`from`**:
+    - **Purpose**: Specify input file path or pattern.
+    - **Template**:
+      ```java
+      pipeline.apply(TextIO.read().from("path/to/input/file"));
+      ```
+    - **Example**: Read from a text file:
+      ```java
+      PCollection<String> lines = pipeline.apply(TextIO.read().from("input.txt"));
+      ```
+
+- **`to`**:
+    - **Purpose**: Specify output file path or pattern.
+    - **Template**:
+      ```java
+      pipeline.apply(TextIO.write().to("path/to/output/file"));
+      ```
+    - **Example**: Write to a text file:
+      ```java
+      words.apply(TextIO.write().to("output.txt"));
+      ```
+
+- **`withCoder`**:
+    - **Purpose**: Define how elements are serialized/deserialized.
+    - **Template**:
+      ```java
+      pipeline.apply(Create.of(elements)
+          .withCoder(Coder.of(ElementType.class)));
+      ```
+    - **Example**: Specify a coder for `Create`:
+      ```java
+      PCollection<MyType> pcollection = pipeline.apply(Create.of(myElements)
+          .withCoder(KvCoder.of(StringUtf8Coder.of(), VarIntCoder.of())));
+      ```
+
 
 NOTE:
 
-- To run the java file from Maven -   mvn exec:java -D"exec.mainClass"="com.complexExamples.code_03_BeamPipeline"
+- To run the java file from Maven -  ` mvn exec:java -D"exec.mainClass"="com.complexExamples.code_03_BeamPipeline"`
+
